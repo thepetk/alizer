@@ -366,7 +366,8 @@ func FindPortSubmatch(re *regexp.Regexp, text string, group int) int {
 }
 
 func FindPotentialPortGroup(re *regexp.Regexp, text string, group int) string {
-	if text != "" {
+	// check empty text and for any open parentheses before matching
+	if text != "" && strings.Count(text, "(") == strings.Count(text, ")") {
 		matches := re.FindStringSubmatch(text)
 		if len(matches) > group {
 			return matches[group]

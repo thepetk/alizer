@@ -12,6 +12,7 @@ package enricher
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -101,25 +102,41 @@ func GetPortFromFileGo(rules model.PortMatchRules, text string) []int {
 func GetPortWithMatchIndexesGo(content string, matchIndexes []int, toBeReplaced string) int {
 	portPlaceholder := content[matchIndexes[0]:matchIndexes[1]]
 	//we should end up with something like ".ListenAndServe(PORT"
-	portPlaceholder = strings.Replace(portPlaceholder, toBeReplaced, "", -1)
+	//and we should clean pointer instance from variables
+	formattedPortPlaceholder := formatPlaceholder(portPlaceholder, toBeReplaced)
 	// if we are lucky enough portPlaceholder contains a real HOST:PORT otherwise it is a variable/expression
-	re := regexp.MustCompile(`:*(\d+)`)
-	if port := utils.FindPortSubmatch(re, portPlaceholder, 1); port != -1 {
+	re := regexp.MustCompile(`:\*(\d+)`)
+	// In case the port placeholder contains an open parentheses skip
+	if strings.Count(formattedPortPlaceholder, "(") != strings.Count(formattedPortPlaceholder, ")") {
+		return -1
+	}
+	if port := utils.FindPortSubmatch(re, formattedPortPlaceholder, 1); port != -1 {
 		return port
 	}
 
 	// we are not dealing with a host:port, let's try to find a variable set before the listen function
 	contentBeforeMatch := content[0:matchIndexes[0]]
-	re = regexp.MustCompile(portPlaceholder + `\s+[:=]+\s"([^"]*)`)
+	if formattedPortPlaceholder == " Start(ctx context.Context" {
+		fmt.Printf("here")
+	}
+	re = regexp.MustCompile(formattedPortPlaceholder + `\s+[:=]+\s"([^"]*)`)
 	matches := re.FindStringSubmatch(contentBeforeMatch)
 	if len(matches) > 0 {
 		// hostPortValue should be host:port
 		hostPortValue := matches[len(matches)-1]
-		re = regexp.MustCompile(`:*(\d+)$`)
+		re = regexp.MustCompile(`:\*(\d+)$`)
 		if port := utils.FindPortSubmatch(re, hostPortValue, 1); port != -1 {
 			return port
 		}
 	}
 
 	return -1
+}
+
+func formatPlaceholder(placeholder string, replaceString string) string {
+	formattedPlaceholder := strings.Replace(placeholder, replaceString, "", -1)
+	if strings.HasPrefix(formattedPlaceholder, "*") {
+		formattedPlaceholder = strings.ReplaceAll(formattedPlaceholder, "*", "//*")
+	}
+	return formattedPlaceholder
 }
