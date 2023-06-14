@@ -1,8 +1,5 @@
 on: release
 
-env:
-  go_release: ngs/go-release.action@v1.0.1
-
 name: Build Release
 
 jobs:
@@ -12,7 +9,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: compile and release
-      uses: $go_release
+      uses: ngs/go-release.action@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: amd64
@@ -24,7 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: compile and release
-      uses: $go_release
+      uses: ngs/go-release.action@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: ppc64le
@@ -36,7 +33,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: compile and release
-      uses: $go_release
+      uses: ngs/go-release.action@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: s390x
@@ -48,7 +45,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: compile and release
-      uses: $go_release
+      uses: ngs/go-release.action@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: amd64
@@ -60,7 +57,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: compile and release
-      uses: $go_release
+      uses: ngs/go-release.action@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: amd64
